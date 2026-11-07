@@ -1,0 +1,57 @@
+# Passo 4: HTTP sem reaproveitamento (sem warm_containers no samconfig.toml)
+# capturado em 06/11/2026 19:53:07 | macOS arm64 | saida real; do log do servidor saiu so o ruido citado abaixo
+
+$ sam local start-api    # em outro terminal
+
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-002","hospital":"H-Caruaru"}'
+{"guia": "G-R-002", "hospital": "H-Caruaru", "bolsas": [], "invocacaoNesteAmbiente": 1}  [HTTP 201 em 2.160488 s]
+
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-002","hospital":"H-Caruaru"}'
+{"guia": "G-R-002", "hospital": "H-Caruaru", "bolsas": [], "invocacaoNesteAmbiente": 1}  [HTTP 201 em 0.318491 s]
+
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-002","hospital":"H-Caruaru"}'
+{"guia": "G-R-002", "hospital": "H-Caruaru", "bolsas": [], "invocacaoNesteAmbiente": 1}  [HTTP 201 em 0.280955 s]
+
+##### validacao: sem requisicaoId
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"hospital":"H-Caruaru"}'
+{"erro": "requisicaoId obrigat\u00f3rio"}  [HTTP 400 em 0.324379 s]
+
+--- log do servidor (sem as linhas em branco, o GET de checagem, avisos de Python e o traceback ao encerrar) ---
+No current session found, using default AWS::AccountId
+Mounting HelloWorldFunction at http://127.0.0.1:3000/guias [POST]
+You can now browse to the above endpoints to invoke your functions. You do not need to restart/reload SAM CLI while working on your functions, changes will be reflected instantly/automatically. If you used sam build before running local commands, you will need to re-run sam build for the changes to be picked up. You only need to restart SAM CLI if you update your AWS SAM template
+2026-11-06 19:53:07 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:3000
+2026-11-06 19:53:07 Press CTRL+C to quit
+Invoking app.lambda_handler (python3.12)
+Local image is up-to-date
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+Mounting /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: df911310871fa2c12a71d3bbe9a4e1f0576ea2d36919096bdf19366fcd53feb2
+START RequestId: b45bbfa0-6cb3-4bfd-9499-53482665be05 Version: $LATEST
+END RequestId: b45bbfa0-6cb3-4bfd-9499-53482665be05
+REPORT RequestId: b45bbfa0-6cb3-4bfd-9499-53482665be05	Init Duration: 0.03 ms	Duration: 19.01 ms	Billed Duration: 20 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:09 127.0.0.1 - - [06/Nov/2026 19:53:09] "POST /guias HTTP/1.1" 201 -
+Invoking app.lambda_handler (python3.12)
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+Mounting /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: 35cc3617924d7427b9f99cf4f9afdc62957a15e78f32f56ebf26b6de7f7ef600
+END RequestId: c22b3b76-c025-40f3-aaa0-eb53a4ad6939
+REPORT RequestId: c22b3b76-c025-40f3-aaa0-eb53a4ad6939	Init Duration: 0.02 ms	Duration: 18.19 ms	Billed Duration: 19 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:10 127.0.0.1 - - [06/Nov/2026 19:53:10] "POST /guias HTTP/1.1" 201 -
+Invoking app.lambda_handler (python3.12)
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+Mounting /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: def99e29ede6bada26142b3297e74409da666407f2982013ee0741e07301a0ac
+END RequestId: 3a417c90-56b6-4c66-9d39-1e5f6b70c190
+REPORT RequestId: 3a417c90-56b6-4c66-9d39-1e5f6b70c190	Init Duration: 0.02 ms	Duration: 20.29 ms	Billed Duration: 21 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:10 127.0.0.1 - - [06/Nov/2026 19:53:10] "POST /guias HTTP/1.1" 201 -
+Invoking app.lambda_handler (python3.12)
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+Mounting /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: 13aaf927fa6ff44833b36a048b5890a22b4ed88042ef9fdbef9a44e9030aea45
+START RequestId: 0c069612-e658-4afb-bbee-51fa4488e628 Version: $LATEST
+END RequestId: 0c069612-e658-4afb-bbee-51fa4488e628
+REPORT RequestId: 0c069612-e658-4afb-bbee-51fa4488e628	Init Duration: 0.02 ms	Duration: 19.04 ms	Billed Duration: 20 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:10 127.0.0.1 - - [06/Nov/2026 19:53:10] "POST /guias HTTP/1.1" 400 -
+

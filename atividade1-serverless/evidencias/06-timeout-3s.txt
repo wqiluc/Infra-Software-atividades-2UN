@@ -1,0 +1,61 @@
+# Passo 5: demorar=true com Timeout: 3 (LAZY)
+# capturado em 06/11/2026 19:53:16 | macOS arm64 | saida real; do log do servidor saiu so o ruido citado abaixo
+
+$ grep -n 'Timeout' template.yaml
+9:    Timeout: 3
+
+$ sam local start-api --warm-containers LAZY   # em outro terminal
+
+##### aquecendo o ambiente
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-002","hospital":"H-Caruaru"}'
+{"guia": "G-R-002", "hospital": "H-Caruaru", "bolsas": [], "invocacaoNesteAmbiente": 1}  [HTTP 201 em 2.187435 s]
+
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-002","hospital":"H-Caruaru"}'
+{"guia": "G-R-002", "hospital": "H-Caruaru", "bolsas": [], "invocacaoNesteAmbiente": 2}  [HTTP 201 em 0.014366 s]
+
+##### demorar = true
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-003","demorar":true}'
+{"message":"Internal server error"}
+  [HTTP 502 em 3.123077 s]
+
+##### proxima chamada normal: o contador recomecou?
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-002","hospital":"H-Caruaru"}'
+{"guia": "G-R-002", "hospital": "H-Caruaru", "bolsas": [], "invocacaoNesteAmbiente": 1}  [HTTP 201 em 0.062224 s]
+
+--- log do servidor (sem as linhas em branco, o GET de checagem, avisos de Python e o traceback ao encerrar) ---
+No current session found, using default AWS::AccountId
+Mounting HelloWorldFunction at http://127.0.0.1:3000/guias [POST]
+You can now browse to the above endpoints to invoke your functions. You do not need to restart/reload SAM CLI while working on your functions, changes will be reflected instantly/automatically. If you used sam build before running local commands, you will need to re-run sam build for the changes to be picked up. You only need to restart SAM CLI if you update your AWS SAM template
+2026-11-06 19:53:17 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:3000
+2026-11-06 19:53:17 Press CTRL+C to quit
+Invoking app.lambda_handler (python3.12)
+Local image is up-to-date
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+Mounting /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: 42a4aa1f9fcd00e4b002f479512febc82ebea061078ebd16b2c188b1d3b18a65
+END RequestId: b8a8d4b6-69a0-4c5a-8ffb-e42cb9931202
+REPORT RequestId: b8a8d4b6-69a0-4c5a-8ffb-e42cb9931202	Init Duration: 0.02 ms	Duration: 19.80 ms	Billed Duration: 20 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:19 127.0.0.1 - - [06/Nov/2026 19:53:19] "POST /guias HTTP/1.1" 201 -
+Invoking app.lambda_handler (python3.12)
+Lambda function 'HelloWorldFunction' is already running
+START RequestId: 44c83b4e-77ae-4e1d-a197-b2992727c58e Version: $LATEST
+END RequestId: 44c83b4e-77ae-4e1d-a197-b2992727c58e
+REPORT RequestId: 44c83b4e-77ae-4e1d-a197-b2992727c58e	Duration: 0.86 ms	Billed Duration: 1 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:19 127.0.0.1 - - [06/Nov/2026 19:53:19] "POST /guias HTTP/1.1" 201 -
+Invoking app.lambda_handler (python3.12)
+Lambda function 'HelloWorldFunction' is already running
+START RequestId: 18586eee-eaaa-4bef-bb2e-9d2b84a8f92d Version: $LATEST
+Function 'HelloWorldFunction' timed out after 3 seconds
+06 Nov 2026 22:53:22,410 [ERROR] (rapid) Invoke failed InvokeID=18586eee-eaaa-4bef-bb2e-9d2b84a8f92d error=errResetReceived
+END RequestId: 18586eee-eaaa-4bef-bb2e-9d2b84a8f92d
+REPORT RequestId: 18586eee-eaaa-4bef-bb2e-9d2b84a8f92d	Duration: 3000.00 ms	Billed Duration: 3000 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+Invalid lambda response received: Lambda response must be valid json
+2026-11-06 19:53:22 127.0.0.1 - - [06/Nov/2026 19:53:22] "POST /guias HTTP/1.1" 502 -
+Invoking app.lambda_handler (python3.12)
+Lambda function 'HelloWorldFunction' is already running
+START RequestId: e2899aa7-ec94-49a4-b297-a1a4a5a7db00 Version: $LATEST
+END RequestId: e2899aa7-ec94-49a4-b297-a1a4a5a7db00
+REPORT RequestId: e2899aa7-ec94-49a4-b297-a1a4a5a7db00	Duration: 35.95 ms	Billed Duration: 36 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:22 127.0.0.1 - - [06/Nov/2026 19:53:22] "POST /guias HTTP/1.1" 201 -
+

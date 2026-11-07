@@ -1,0 +1,74 @@
+# Opcional: DLQ com maxReceiveCount=3 (visibility de 5 s so para encurtar a espera)
+# capturado em 06/11/2026 20:03:26 | macOS arm64 | saida real
+# o horario no inicio das linhas vem do pipe de captura, nao do consumidor.py
+
+$ aws sqs create-queue --queue-name guias-dlq --endpoint-url http://localhost:9324
+{
+    "QueueUrl": "http://localhost:9324/000000000000/guias-dlq"
+}
+
+$ aws sqs get-queue-attributes --queue-url http://localhost:9324/000000000000/guias-dlq --attribute-names QueueArn --endpoint-url http://localhost:9324
+{
+    "Attributes": {
+        "QueueArn": "arn:aws:sqs:elasticmq:000000000000:guias-dlq"
+    }
+}
+
+$ aws sqs create-queue --queue-name guias-com-dlq --endpoint-url http://localhost:9324 --attributes file://dlq-atributos.json
+{
+    "QueueUrl": "http://localhost:9324/000000000000/guias-com-dlq"
+}
+
+$ aws sqs get-queue-attributes --queue-url http://localhost:9324/000000000000/guias-com-dlq --attribute-names VisibilityTimeout RedrivePolicy --endpoint-url http://localhost:9324
+{
+    "Attributes": {
+        "VisibilityTimeout": "5",
+        "RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:elasticmq:000000000000:guias-dlq\",\"maxReceiveCount\":3}"
+    }
+}
+
+$ FILA=guias-com-dlq .venv/bin/python produtor.py
+21 mensagens enviadas
+
+##### saida do consumidor (so as linhas de falha e o total)
+20:03:41.048 falhou; volta para a fila: mensagem sem requisicaoId {'ApproximateReceiveCount': '1'}
+20:03:46.071 falhou; volta para a fila: mensagem sem requisicaoId {'ApproximateReceiveCount': '2'}
+20:03:51.093 falhou; volta para a fila: mensagem sem requisicaoId {'ApproximateReceiveCount': '3'}
+guias geradas: 20
+
+##### fila de origem: vazia
+$ aws sqs get-queue-attributes --queue-url http://localhost:9324/000000000000/guias-com-dlq --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible --endpoint-url http://localhost:9324
+{
+    "Attributes": {
+        "ApproximateNumberOfMessages": "0",
+        "ApproximateNumberOfMessagesNotVisible": "0"
+    }
+}
+
+##### DLQ: uma mensagem
+$ aws sqs get-queue-attributes --queue-url http://localhost:9324/000000000000/guias-dlq --attribute-names ApproximateNumberOfMessages --endpoint-url http://localhost:9324
+{
+    "Attributes": {
+        "ApproximateNumberOfMessages": "1"
+    }
+}
+
+$ aws sqs receive-message --queue-url http://localhost:9324/000000000000/guias-dlq --message-system-attribute-names All --endpoint-url http://localhost:9324
+{
+    "Messages": [
+        {
+            "MessageId": "27384022-51bd-4092-915f-d43d776e78f7",
+            "ReceiptHandle": "27384022-51bd-4092-915f-d43d776e78f7#04915994-c6cf-4efc-9956-87479afa3451",
+            "MD5OfBody": "d2ed8f80bc4357ba5765b4dd10db25eb",
+            "Body": "{\"hospital\": \"H-Recife\"}",
+            "Attributes": {
+                "DeadLetterQueueSourceArn": "arn:aws:sqs:elasticmq:000000000000:guias-com-dlq",
+                "ApproximateFirstReceiveTimestamp": "1794006221041",
+                "SentTimestamp": "1794006221039",
+                "SenderId": "127.0.0.1",
+                "ApproximateReceiveCount": "4"
+            }
+        }
+    ]
+}
+

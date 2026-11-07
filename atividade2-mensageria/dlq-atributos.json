@@ -1,0 +1,4 @@
+{
+  "VisibilityTimeout": "5",
+  "RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:elasticmq:000000000000:guias-dlq\",\"maxReceiveCount\":\"3\"}"
+}

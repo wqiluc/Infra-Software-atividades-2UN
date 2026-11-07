@@ -1,0 +1,43 @@
+# Passo 4: HTTP com --warm-containers LAZY
+# capturado em 06/11/2026 19:53:10 | macOS arm64 | saida real; do log do servidor saiu so o ruido citado abaixo
+
+$ sam local start-api --warm-containers LAZY   # em outro terminal
+
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-002","hospital":"H-Caruaru"}'
+{"guia": "G-R-002", "hospital": "H-Caruaru", "bolsas": [], "invocacaoNesteAmbiente": 1}  [HTTP 201 em 2.007838 s]
+
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-002","hospital":"H-Caruaru"}'
+{"guia": "G-R-002", "hospital": "H-Caruaru", "bolsas": [], "invocacaoNesteAmbiente": 2}  [HTTP 201 em 0.013518 s]
+
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-002","hospital":"H-Caruaru"}'
+{"guia": "G-R-002", "hospital": "H-Caruaru", "bolsas": [], "invocacaoNesteAmbiente": 3}  [HTTP 201 em 0.010044 s]
+
+--- log do servidor (sem as linhas em branco, o GET de checagem, avisos de Python e o traceback ao encerrar) ---
+No current session found, using default AWS::AccountId
+Mounting HelloWorldFunction at http://127.0.0.1:3000/guias [POST]
+You can now browse to the above endpoints to invoke your functions. You do not need to restart/reload SAM CLI while working on your functions, changes will be reflected instantly/automatically. If you used sam build before running local commands, you will need to re-run sam build for the changes to be picked up. You only need to restart SAM CLI if you update your AWS SAM template
+2026-11-06 19:53:11 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:3000
+2026-11-06 19:53:11 Press CTRL+C to quit
+Invoking app.lambda_handler (python3.12)
+Local image is up-to-date
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+Mounting /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: 5eb04769a64e36d25687c22d89fb637963ecf93b618da87cfa18243184bdacdb
+START RequestId: a275621d-5c75-42b6-acff-9a7534aaee5d Version: $LATEST
+END RequestId: a275621d-5c75-42b6-acff-9a7534aaee5d
+REPORT RequestId: a275621d-5c75-42b6-acff-9a7534aaee5d	Init Duration: 0.03 ms	Duration: 18.57 ms	Billed Duration: 19 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:13 127.0.0.1 - - [06/Nov/2026 19:53:13] "POST /guias HTTP/1.1" 201 -
+Invoking app.lambda_handler (python3.12)
+Lambda function 'HelloWorldFunction' is already running
+START RequestId: 522a688e-692c-47f5-b50f-a31032119b0a Version: $LATEST
+END RequestId: 522a688e-692c-47f5-b50f-a31032119b0a
+REPORT RequestId: 522a688e-692c-47f5-b50f-a31032119b0a	Duration: 0.55 ms	Billed Duration: 1 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:13 127.0.0.1 - - [06/Nov/2026 19:53:13] "POST /guias HTTP/1.1" 201 -
+Invoking app.lambda_handler (python3.12)
+Lambda function 'HelloWorldFunction' is already running
+START RequestId: b9db9e48-3503-4e73-86c4-e17c03303e6e Version: $LATEST
+END RequestId: b9db9e48-3503-4e73-86c4-e17c03303e6e
+REPORT RequestId: b9db9e48-3503-4e73-86c4-e17c03303e6e	Duration: 0.57 ms	Billed Duration: 1 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:13 127.0.0.1 - - [06/Nov/2026 19:53:13] "POST /guias HTTP/1.1" 201 -
+

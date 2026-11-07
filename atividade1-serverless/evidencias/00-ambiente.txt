@@ -1,0 +1,14 @@
+# Ambiente
+# capturado em 06/11/2026 19:52:17 | macOS arm64 | saida real
+
+$ docker --version
+Docker version 29.7.2, build a7dcaa6
+
+$ docker info --format '{{.ServerVersion}} {{.Architecture}}'
+29.7.2 aarch64
+
+$ sam --version
+SAM CLI, version 1.166.2
+
+$ python3.12 --version
+Python 3.12.14

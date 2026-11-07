@@ -1,0 +1,51 @@
+# Passo 3: invocacao com evento, com tempos (handler corrigido; imagem removida antes da 1a invocacao)
+# capturado em 06/11/2026 19:52:27 | macOS arm64 | saida real
+
+$ docker images --format '{{.Repository}}:{{.Tag}}' | grep lambda/python || echo '(nenhuma imagem do Lambda em cache)'
+(nenhuma imagem do Lambda em cache)
+
+##### 1a invocacao
+$ time sam local invoke -e events/pedido.json
+No current session found, using default AWS::AccountId
+Invoking app.lambda_handler (python3.12)
+Local image was not found.
+Removing rapid images for repo public.ecr.aws/sam/emulation-python3.12
+Building image.............................................................................................................................................................................................................................................................................................................................................................................................................................................
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+
+Mounting /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: a5aead9fbf0d766f161fc1a4e90b725c605fd831e6dc991ef5ad0ad9fe3037fb
+END RequestId: ebef3499-3a94-4d87-8f52-2f831d7c04b6
+REPORT RequestId: ebef3499-3a94-4d87-8f52-2f831d7c04b6	Init Duration: 0.02 ms	Duration: 22.88 ms	Billed Duration: 23 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+{"statusCode": 201, "body": "{\"guia\": \"G-R-001\", \"hospital\": \"H-Recife\", \"bolsas\": [\"O-NEG-0142\"], \"invocacaoNesteAmbiente\": 1}"}
+>>> tempo total: 28.493 s
+
+##### 2a invocacao
+$ time sam local invoke -e events/pedido.json
+No current session found, using default AWS::AccountId
+Invoking app.lambda_handler (python3.12)
+Local image is up-to-date
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+
+Mounting /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: e590a44a0bbf8117ba3706bed0355316e9a15d4d131df9c01acd59890929c209
+START RequestId: 3c419395-fb7b-4943-acdc-c787830bbba4 Version: $LATEST
+END RequestId: 3c419395-fb7b-4943-acdc-c787830bbba4
+REPORT RequestId: 3c419395-fb7b-4943-acdc-c787830bbba4	Init Duration: 0.02 ms	Duration: 19.29 ms	Billed Duration: 20 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+{"statusCode": 201, "body": "{\"guia\": \"G-R-001\", \"hospital\": \"H-Recife\", \"bolsas\": [\"O-NEG-0142\"], \"invocacaoNesteAmbiente\": 1}"}
+>>> tempo total: 6.915 s
+
+##### 3a invocacao
+$ time sam local invoke -e events/pedido.json
+No current session found, using default AWS::AccountId
+Invoking app.lambda_handler (python3.12)
+Local image is up-to-date
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+
+Mounting /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: 35df977420c30f82036edb32c8661343594751da684e63b68ee860199eaed6bb
+END RequestId: c44acfd1-c53f-4bc6-bb10-ed5fd67fe5c9
+REPORT RequestId: c44acfd1-c53f-4bc6-bb10-ed5fd67fe5c9	Init Duration: 0.03 ms	Duration: 19.23 ms	Billed Duration: 20 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+{"statusCode": 201, "body": "{\"guia\": \"G-R-001\", \"hospital\": \"H-Recife\", \"bolsas\": [\"O-NEG-0142\"], \"invocacaoNesteAmbiente\": 1}"}
+>>> tempo total: 3.870 s
+

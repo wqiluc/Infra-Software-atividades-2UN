@@ -1,0 +1,53 @@
+# Passo 5: Timeout aumentado para 10 s, sam build e repeticao
+# capturado em 06/11/2026 19:53:22 | macOS arm64 | saida real; do log do servidor saiu so o ruido citado abaixo
+
+$ sed -i '' 's/Timeout: 3/Timeout: 10/' template.yaml
+
+$ grep -n 'Timeout' template.yaml
+9:    Timeout: 10
+
+$ time sam build
+Starting Build use cache
+Manifest file is changed (new hash: 1a9c5b4892ebb86c9a65b8ab0da3b5f0) or dependency folder (.aws-sam/deps/7b104235-79bd-4b0a-9250-4c2e81ab7d67) is missing for (HelloWorldFunction), downloading dependencies and copying/building source
+Building codeuri: /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/hello_world runtime: python3.12 architecture: arm64 functions: HelloWorldFunction
+ Running PythonPipBuilder:CleanUp
+ Running PythonPipBuilder:ResolveDependencies
+ Running PythonPipBuilder:CopySource
+Skipping copy operation since source .aws-sam/deps/7b104235-79bd-4b0a-9250-4c2e81ab7d67 does not exist
+ Running PythonPipBuilder:CopySource
+
+Build Succeeded
+
+Built Artifacts  : .aws-sam/build
+Built Template   : .aws-sam/build/template.yaml
+
+Commands you can use next
+=========================
+[*] Validate SAM template: sam validate
+[*] Invoke Function: sam local invoke
+[*] Test Function in the Cloud: sam sync --stack-name {{stack-name}} --watch
+[*] Deploy: sam deploy --guided
+>>> tempo total: 0.563 s
+
+$ sam local start-api --warm-containers LAZY   # em outro terminal
+
+$ curl -s -m 30 -w "  [HTTP %{http_code} em %{time_total} s]\n" -X POST http://127.0.0.1:3000/guias -H "Content-Type: application/json" -d '{"requisicaoId":"R-003","demorar":true}'
+{"guia": "G-R-003", "hospital": null, "bolsas": [], "invocacaoNesteAmbiente": 1}  [HTTP 201 em 9.069474 s]
+
+--- log do servidor (sem as linhas em branco, o GET de checagem, avisos de Python e o traceback ao encerrar) ---
+No current session found, using default AWS::AccountId
+Mounting HelloWorldFunction at http://127.0.0.1:3000/guias [POST]
+You can now browse to the above endpoints to invoke your functions. You do not need to restart/reload SAM CLI while working on your functions, changes will be reflected instantly/automatically. If you used sam build before running local commands, you will need to re-run sam build for the changes to be picked up. You only need to restart SAM CLI if you update your AWS SAM template
+2026-11-06 19:53:25 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:3000
+2026-11-06 19:53:25 Press CTRL+C to quit
+Invoking app.lambda_handler (python3.12)
+Local image is up-to-date
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+Mounting /Users/lucaspaguettipereira/Documents/GitHub/infra-software-atividades/atividade1-serverless/guia-transporte/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: 7192ee473cd8b538c8e49bc74ae56a2ba9ab33853397f43d84a5d3b50f1271b7
+START RequestId: 0ad7cd66-aa6f-4100-b489-3f836de55603 Version: $LATEST
+END RequestId: 0ad7cd66-aa6f-4100-b489-3f836de55603
+REPORT RequestId: 0ad7cd66-aa6f-4100-b489-3f836de55603	Init Duration: 0.03 ms	Duration: 5025.98 ms	Billed Duration: 5026 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+2026-11-06 19:53:35 127.0.0.1 - - [06/Nov/2026 19:53:35] "POST /guias HTTP/1.1" 201 -
+

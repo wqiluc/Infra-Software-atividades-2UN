@@ -1,0 +1,33 @@
+# Passo 3 seguindo o PDF ao pe da letra: JSONDecodeError (o generate-event entrega o body em base64)
+# capturado em 06/11/2026 19:52:20 | macOS arm64 | saida real
+
+$ python3.12 -c "import json; e=json.load(open('events/pedido.json')); print('isBase64Encoded =', e['isBase64Encoded']); print('body =', e['body'])"
+isBase64Encoded = True
+body = eyJyZXF1aXNpY2FvSWQiOiJSLTAwMSIsImhvc3BpdGFsIjoiSC1SZWNpZmUiLCJib2xzYXMiOlsiTy1ORUctMDE0MiJdfQ==
+
+$ grep -n 'json.loads' hello_world/app.py
+8:    pedido = json.loads(event.get("body") or "{}")
+
+$ sam local invoke -e events/pedido.json
+No current session found, using default AWS::AccountId
+Invoking app.lambda_handler (python3.12)
+Local image is up-to-date
+Using local image: public.ecr.aws/lambda/python:3.12-rapid-arm64.
+
+Mounting /private/tmp/claude-501/-Users-lucaspaguettipereira-Documents-GitHub-Rotavital/3ebd4488-4879-4a95-b794-0364e9764c45/scratchpad/pdf-original/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+SAM_CONTAINER_ID: 43065fa8258f6b5066389d186dd0ab167adca2b9d4b19a15be01cba8454a4d4f
+START RequestId: 7f02d6f0-79d2-42e0-8722-01cbec5b74dd Version: $LATEST
+[ERROR] JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/var/task/app.py", line 8, in lambda_handler
+    pedido = json.loads(event.get("body") or "{}")
+  File "/var/lang/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/var/lang/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/var/lang/lib/python3.12/json/decoder.py", line 356, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+END RequestId: 7f02d6f0-79d2-42e0-8722-01cbec5b74dd
+REPORT RequestId: 7f02d6f0-79d2-42e0-8722-01cbec5b74dd	Init Duration: 0.01 ms	Duration: 25.77 ms	Billed Duration: 26 ms	Memory Size: 128 MB	Max Memory Used: 128 MB	
+{"errorMessage": "Expecting value: line 1 column 1 (char 0)", "errorType": "JSONDecodeError", "requestId": "7f02d6f0-79d2-42e0-8722-01cbec5b74dd", "stackTrace": ["  File \"/var/task/app.py\", line 8, in lambda_handler\n    pedido = json.loads(event.get(\"body\") or \"{}\")\n", "  File \"/var/lang/lib/python3.12/json/__init__.py\", line 346, in loads\n    return _default_decoder.decode(s)\n", "  File \"/var/lang/lib/python3.12/json/decoder.py\", line 338, in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n", "  File \"/var/lang/lib/python3.12/json/decoder.py\", line 356, in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\n"]}
+

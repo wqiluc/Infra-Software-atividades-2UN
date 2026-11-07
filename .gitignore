@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.aws-sam/
+.DS_Store
+.vscode/
+.env
+.ferramentas/
+pdf/

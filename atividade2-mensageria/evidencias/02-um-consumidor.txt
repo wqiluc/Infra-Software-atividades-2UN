@@ -1,0 +1,42 @@
+# Passo 5.1: um consumidor (20 guias e a invalida voltando a cada 15 s)
+# capturado em 06/11/2026 20:00:38 | macOS arm64 | saida real
+# o horario no inicio das linhas vem do pipe de captura, nao do consumidor.py
+
+$ .venv/bin/python produtor.py
+21 mensagens enviadas
+
+##### estado da fila logo depois: a invalida segue na fila, so que invisivel
+$ aws sqs get-queue-attributes --queue-url http://localhost:9324/000000000000/guias --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible --endpoint-url http://localhost:9324
+{
+    "Attributes": {
+        "ApproximateNumberOfMessages": "0",
+        "ApproximateNumberOfMessagesNotVisible": "1"
+    }
+}
+
+##### saida do consumidor
+20:00:41.013 71584 guia G-R-001 H-Recife
+20:00:41.017 71584 guia G-R-002 H-Recife
+20:00:41.018 71584 guia G-R-003 H-Recife
+20:00:41.022 71584 guia G-R-004 H-Recife
+20:00:41.023 71584 guia G-R-005 H-Recife
+20:00:41.024 71584 guia G-R-006 H-Recife
+20:00:41.028 71584 guia G-R-007 H-Recife
+20:00:41.029 71584 guia G-R-008 H-Recife
+20:00:41.030 71584 guia G-R-009 H-Recife
+20:00:41.033 71584 guia G-R-010 H-Recife
+20:00:41.034 71584 guia G-R-011 H-Recife
+20:00:41.036 71584 guia G-R-012 H-Recife
+20:00:41.037 71584 guia G-R-013 H-Recife
+20:00:41.040 71584 guia G-R-014 H-Recife
+20:00:41.041 71584 guia G-R-015 H-Recife
+20:00:41.043 71584 guia G-R-016 H-Recife
+20:00:41.044 71584 guia G-R-017 H-Recife
+20:00:41.046 71584 guia G-R-018 H-Recife
+20:00:41.048 71584 guia G-R-019 H-Recife
+20:00:41.049 71584 guia G-R-020 H-Recife
+20:00:41.051 falhou; volta para a fila: mensagem sem requisicaoId {'ApproximateReceiveCount': '1'}
+20:00:56.071 falhou; volta para a fila: mensagem sem requisicaoId {'ApproximateReceiveCount': '2'}
+20:01:11.090 falhou; volta para a fila: mensagem sem requisicaoId {'ApproximateReceiveCount': '3'}
+20:01:26.111 falhou; volta para a fila: mensagem sem requisicaoId {'ApproximateReceiveCount': '4'}
+

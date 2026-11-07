@@ -1,0 +1,27 @@
+# Passo 2: fila no ar
+# capturado em 06/11/2026 20:00:38 | macOS arm64 | saida real
+# o horario no inicio das linhas vem do pipe de captura, nao do consumidor.py
+
+$ docker run --rm -p 9324:9324 softwaremill/elasticmq-native   # em outro terminal; abaixo, so as linhas de inicio do log
+23:00:37.828 [elasticmq-pekko.actor.default-dispatcher-11] INFO  o.e.rest.sqs.TheSQSRestServerBuilder - Started SQS rest
+23:00:37.828 [main] INFO  org.elasticmq.server.Main$ - === ElasticMQ server (1.7.1) started in 14 ms ===
+
+$ aws --version
+aws-cli/2.37.0 Python/3.14.7 Darwin/25.6.0 source/arm64
+
+$ .venv/bin/python -c 'import boto3; print("boto3", boto3.__version__)'
+boto3 1.43.126
+
+$ aws sqs create-queue --queue-name guias --attributes VisibilityTimeout=15 --endpoint-url http://localhost:9324
+{
+    "QueueUrl": "http://localhost:9324/000000000000/guias"
+}
+
+$ aws sqs get-queue-attributes --queue-url http://localhost:9324/000000000000/guias --attribute-names VisibilityTimeout QueueArn --endpoint-url http://localhost:9324
+{
+    "Attributes": {
+        "VisibilityTimeout": "15",
+        "QueueArn": "arn:aws:sqs:elasticmq:000000000000:guias"
+    }
+}
+
