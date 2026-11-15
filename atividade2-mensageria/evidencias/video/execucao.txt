@@ -1,0 +1,75 @@
+# Video 2: execucao real do roteiro (T1 fila, T2 comandos, T3 e T4 consumidores)
+# capturado em 15/11/2026 17:02:13 | macOS arm64 | saida real
+# o horario no inicio das linhas vem do pipe de captura, nao do consumidor.py;
+# os consumidores rodaram com PYTHONUNBUFFERED=1 para o pipe receber cada linha na hora
+# o log do T1 traz o relogio do conteiner (UTC); T2, T3 e T4, o horario local (UTC-3)
+
+##### T1 · fila
+$ docker run --rm -p 9324:9324 softwaremill/elasticmq-native
+20:02:13.820 [main] INFO  org.elasticmq.server.Main$ - Starting ElasticMQ server (1.7.1) ...
+20:02:13.842 [elasticmq-pekko.actor.default-dispatcher-7] INFO  o.a.pekko.event.slf4j.Slf4jLogger - Slf4jLogger started
+20:02:13.848 [main] INFO  o.e.rest.sqs.TheSQSRestServerBuilder - Metrics MBean org.elasticmq:name=Queues successfully registered
+20:02:13.848 [elasticmq-pekko.actor.default-dispatcher-8] INFO  o.e.rest.sqs.TheSQSRestServerBuilder - Started SQS rest server, bind address 0.0.0.0:9324, visible server address http://localhost:9324
+20:02:13.848 [main] INFO  org.elasticmq.server.Main$ - === ElasticMQ server (1.7.1) started in 30 ms ===
+20:02:14.644 [elasticmq-pekko.actor.default-dispatcher-7] INFO  o.elasticmq.actor.QueueManagerActor - Creating queue CreateQueueData(guias,Some(MillisVisibilityTimeout(15000)),None,None,None,None,None,false,false,None,None,Map())
+20:02:51.504 [Thread-1] INFO  org.elasticmq.server.Main$ - ElasticMQ server stopping ...
+
+##### T2 · comandos
+17:02:14 $ export AWS_ACCESS_KEY_ID=x AWS_SECRET_ACCESS_KEY=x AWS_DEFAULT_REGION=us-east-1 AWS_PAGER=""
+17:02:14 $ aws sqs create-queue --queue-name guias --attributes VisibilityTimeout=15 --endpoint-url http://localhost:9324
+17:02:14 {
+17:02:14     "QueueUrl": "http://localhost:9324/000000000000/guias"
+17:02:14 }
+17:02:14 $ aws sqs get-queue-attributes --endpoint-url http://localhost:9324 --queue-url http://localhost:9324/000000000000/guias --attribute-names VisibilityTimeout ApproximateNumberOfMessagesNotVisible
+17:02:15 {
+17:02:15     "Attributes": {
+17:02:15         "VisibilityTimeout": "15",
+17:02:15         "ApproximateNumberOfMessagesNotVisible": "0"
+17:02:15     }
+17:02:15 }
+17:02:18 $ python produtor.py
+17:02:18 21 mensagens enviadas
+17:02:22 $ aws sqs get-queue-attributes --endpoint-url http://localhost:9324 --queue-url http://localhost:9324/000000000000/guias --attribute-names VisibilityTimeout ApproximateNumberOfMessagesNotVisible
+17:02:22 {
+17:02:22     "Attributes": {
+17:02:22         "VisibilityTimeout": "15",
+17:02:22         "ApproximateNumberOfMessagesNotVisible": "1"
+17:02:22     }
+17:02:22 }
+
+##### T3 · consumidor
+$ python consumidor.py
+17:02:18 95644 guia G-R-002 H-Recife
+17:02:18 95644 guia G-R-004 H-Recife
+17:02:18 95644 guia G-R-006 H-Recife
+17:02:18 95644 guia G-R-008 H-Recife
+17:02:18 95644 guia G-R-010 H-Recife
+17:02:18 95644 guia G-R-012 H-Recife
+17:02:18 95644 guia G-R-014 H-Recife
+17:02:18 95644 guia G-R-016 H-Recife
+17:02:18 95644 guia G-R-018 H-Recife
+17:02:18 95644 guia G-R-020 H-Recife
+17:02:48 falhou; volta para a fila: mensagem sem requisicaoId {'ApproximateReceiveCount': '3'}
+
+##### T4 · consumidor
+$ python consumidor.py
+17:02:18 95646 guia G-R-001 H-Recife
+17:02:18 95646 guia G-R-003 H-Recife
+17:02:18 95646 guia G-R-005 H-Recife
+17:02:18 95646 guia G-R-007 H-Recife
+17:02:18 95646 guia G-R-009 H-Recife
+17:02:18 95646 guia G-R-011 H-Recife
+17:02:18 95646 guia G-R-013 H-Recife
+17:02:18 95646 guia G-R-015 H-Recife
+17:02:18 95646 guia G-R-017 H-Recife
+17:02:18 95646 guia G-R-019 H-Recife
+17:02:18 falhou; volta para a fila: mensagem sem requisicaoId {'ApproximateReceiveCount': '1'}
+17:02:33 falhou; volta para a fila: mensagem sem requisicaoId {'ApproximateReceiveCount': '2'}
+
+##### resumo
+T3 (PID 95644): 10 guias -> 2 4 6 8 10 12 14 16 18 20
+T4 (PID 95646): 10 guias -> 1 3 5 7 9 11 13 15 17 19
+guias distintas: 20 de 20 | repetidas: 0
+contador 1: 17:02:18 no T4
+contador 2: 17:02:33 no T4
+contador 3: 17:02:48 no T3

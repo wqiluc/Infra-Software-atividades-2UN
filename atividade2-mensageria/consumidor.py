@@ -14,6 +14,7 @@ while True:
     resp = sqs.receive_message(
         QueueUrl=url, MaxNumberOfMessages=10, WaitTimeSeconds=10,
         MessageSystemAttributeNames=["ApproximateReceiveCount"])
+    
     for m in resp.get("Messages", []):
         try:
             processar(json.loads(m["Body"]))

@@ -4,6 +4,7 @@ sqs = boto3.client(
     "sqs", endpoint_url="http://localhost:9324", region_name="us-east-1",
     aws_access_key_id="x", aws_secret_access_key="x")
 url = sqs.get_queue_url(QueueName=os.environ.get("FILA", "guias"))["QueueUrl"]
+
 for i in range(1, 21):
     pedido = {"requisicaoId": f"R-{i:03d}", "hospital": "H-Recife"}
     sqs.send_message(QueueUrl=url, MessageBody=json.dumps(pedido))
